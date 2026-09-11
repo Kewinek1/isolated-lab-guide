@@ -1,0 +1,19 @@
+{
+  "site": "A",
+  "addresses_confirmed": false,
+  "isolated_lab_confirmed": false,
+  "lab_cidr": "10.77.10.0/24",
+  "relay_cidr": "10.78.10.0/24",
+  "management_cidr": "10.79.10.0/24",
+  "protected_home_cidrs": [],
+  "protected_external_cidrs": [],
+  "pico": {
+    "enable_network": false,
+    "ssid": null,
+    "wifi_password": null,
+    "country": "XX"
+  },
+  "relay_internet_https": false,
+  "target_ip": "10.77.10.20",
+  "pico_ip": "10.77.10.30"
+}

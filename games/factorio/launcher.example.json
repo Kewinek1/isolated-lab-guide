@@ -1,0 +1,7 @@
+{
+  "game_directory": "/ABSOLUTE/PRIVATE/PATH/factorio-state",
+  "factorio_binary": "/ABSOLUTE/PRIVATE/PATH/factorio/bin/x64/factorio",
+  "artifact_sha256": "REPLACE_WITH_VERIFIED_FACTORIO_BINARY_SHA256",
+  "bind_ip": "REPLACE_WITH_ASSIGNED_TAILSCALE_IPV4",
+  "isolation_verified": false
+}

@@ -1,0 +1,28 @@
+# Merge on a dedicated Debian/Raspberry Pi OS relay only. See REMOTE-ACCESS.md.
+# Synthetic site A. Each person receives a separate account/key for revocation.
+# Group lab-forwarders must have no sudo, docker, lxd, disk or admin privileges.
+# Verify a non-root administrator can log in using a key before reloading.
+PermitRootLogin no
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+PubkeyAuthentication yes
+PermitUserEnvironment no
+AllowTcpForwarding no
+AllowStreamLocalForwarding no
+
+Match Group lab-forwarders
+    AuthenticationMethods publickey
+    PasswordAuthentication no
+    KbdInteractiveAuthentication no
+    AllowTcpForwarding local
+    AllowStreamLocalForwarding no
+    PermitOpen 10.77.10.30:8080 10.77.10.20:8081
+    PermitListen none
+    GatewayPorts no
+    PermitTunnel no
+    AllowAgentForwarding no
+    X11Forwarding no
+    PermitTTY no
+    PermitUserRC no
+    MaxSessions 0
+Match all

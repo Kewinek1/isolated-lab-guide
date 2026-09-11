@@ -1,0 +1,15 @@
+server-ip=REPLACE_WITH_ASSIGNED_TAILSCALE_IPV4
+server-port=25565
+online-mode=true
+white-list=true
+enforce-whitelist=true
+enable-rcon=false
+enable-query=false
+enable-jmx-monitoring=false
+management-server-enabled=false
+max-players=6
+view-distance=6
+simulation-distance=4
+motd=Private lab services
+level-name=world
+spawn-protection=16

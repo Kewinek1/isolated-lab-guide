@@ -1,0 +1,16 @@
+{
+  "name": "Private lab services",
+  "description": "Private cooperative session",
+  "max_players": 6,
+  "visibility": {"public": false, "lan": false},
+  "username": "",
+  "password": "",
+  "token": "",
+  "game_password": "REPLACE_WITH_UNIQUE_RANDOM_SECRET",
+  "require_user_verification": true,
+  "allow_commands": "admins-only",
+  "autosave_interval": 5,
+  "autosave_slots": 5,
+  "auto_pause": true,
+  "only_admins_can_pause_the_game": true
+}

@@ -1,0 +1,12 @@
+# Example only. Endpoint reachability and host firewall are prerequisites.
+# Each relay uses its own tunnel subnet (A=10.76.10, B=10.76.20, C=10.76.30).
+# Never publish filled private keys or endpoint addresses.
+[Interface]
+Address = 10.76.10.1/24
+ListenPort = 51820
+PrivateKey = REPLACE_WITH_RELAY_PRIVATE_KEY
+
+[Peer]
+# One registered workstation. Repeat with a distinct /32 for each participant.
+PublicKey = REPLACE_WITH_WORKSTATION_PUBLIC_KEY
+AllowedIPs = 10.76.10.11/32

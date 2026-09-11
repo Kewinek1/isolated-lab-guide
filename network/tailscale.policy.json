@@ -1,0 +1,369 @@
+{
+  "tagOwners": {
+    "tag:client-a": [
+      "autogroup:admin"
+    ],
+    "tag:relay-a": [
+      "autogroup:admin"
+    ],
+    "tag:target-a": [
+      "autogroup:admin"
+    ],
+    "tag:game-a": [
+      "autogroup:admin"
+    ],
+    "tag:admin-a": [
+      "autogroup:admin"
+    ],
+    "tag:client-b": [
+      "autogroup:admin"
+    ],
+    "tag:relay-b": [
+      "autogroup:admin"
+    ],
+    "tag:target-b": [
+      "autogroup:admin"
+    ],
+    "tag:game-b": [
+      "autogroup:admin"
+    ],
+    "tag:admin-b": [
+      "autogroup:admin"
+    ],
+    "tag:client-c": [
+      "autogroup:admin"
+    ],
+    "tag:relay-c": [
+      "autogroup:admin"
+    ],
+    "tag:target-c": [
+      "autogroup:admin"
+    ],
+    "tag:game-c": [
+      "autogroup:admin"
+    ],
+    "tag:admin-c": [
+      "autogroup:admin"
+    ]
+  },
+  "grants": [
+    {
+      "src": [
+        "tag:client-a",
+        "tag:client-b",
+        "tag:client-c"
+      ],
+      "dst": [
+        "tag:target-a",
+        "tag:target-b",
+        "tag:target-c"
+      ],
+      "ip": [
+        "tcp:8081"
+      ]
+    },
+    {
+      "src": [
+        "tag:client-a",
+        "tag:client-b",
+        "tag:client-c"
+      ],
+      "dst": [
+        "tag:relay-a",
+        "tag:relay-b",
+        "tag:relay-c"
+      ],
+      "ip": [
+        "tcp:22"
+      ]
+    },
+    {
+      "src": [
+        "tag:client-a",
+        "tag:client-b",
+        "tag:client-c"
+      ],
+      "dst": [
+        "tag:game-a",
+        "tag:game-b",
+        "tag:game-c"
+      ],
+      "ip": [
+        "tcp:25565",
+        "udp:34197"
+      ]
+    },
+    {
+      "src": [
+        "tag:admin-a"
+      ],
+      "dst": [
+        "tag:relay-a",
+        "tag:target-a",
+        "tag:game-a"
+      ],
+      "ip": [
+        "tcp:22"
+      ]
+    },
+    {
+      "src": [
+        "tag:admin-b"
+      ],
+      "dst": [
+        "tag:relay-b",
+        "tag:target-b",
+        "tag:game-b"
+      ],
+      "ip": [
+        "tcp:22"
+      ]
+    },
+    {
+      "src": [
+        "tag:admin-c"
+      ],
+      "dst": [
+        "tag:relay-c",
+        "tag:target-c",
+        "tag:game-c"
+      ],
+      "ip": [
+        "tcp:22"
+      ]
+    }
+  ],
+  "tests": [
+    {
+      "src": "tag:client-a",
+      "proto": "tcp",
+      "accept": [
+        "tag:target-a:8081",
+        "tag:relay-a:22",
+        "tag:game-a:25565",
+        "tag:target-b:8081",
+        "tag:relay-b:22",
+        "tag:game-b:25565",
+        "tag:target-c:8081",
+        "tag:relay-c:22",
+        "tag:game-c:25565"
+      ],
+      "deny": [
+        "tag:target-a:22",
+        "tag:game-a:22",
+        "tag:admin-a:22",
+        "tag:relay-a:443",
+        "tag:target-b:22",
+        "tag:game-b:22",
+        "tag:admin-b:22",
+        "tag:relay-b:443",
+        "tag:target-c:22",
+        "tag:game-c:22",
+        "tag:admin-c:22",
+        "tag:relay-c:443"
+      ]
+    },
+    {
+      "src": "tag:client-a",
+      "proto": "udp",
+      "accept": [
+        "tag:game-a:34197",
+        "tag:game-b:34197",
+        "tag:game-c:34197"
+      ],
+      "deny": [
+        "tag:target-a:34197",
+        "tag:target-b:34197",
+        "tag:target-c:34197"
+      ]
+    },
+    {
+      "src": "tag:target-a",
+      "proto": "tcp",
+      "deny": [
+        "tag:client-a:22",
+        "tag:relay-a:22",
+        "tag:target-a:22",
+        "tag:game-a:22",
+        "tag:admin-a:22",
+        "tag:client-b:22",
+        "tag:relay-b:22",
+        "tag:target-b:22",
+        "tag:game-b:22",
+        "tag:admin-b:22",
+        "tag:client-c:22",
+        "tag:relay-c:22",
+        "tag:target-c:22",
+        "tag:game-c:22",
+        "tag:admin-c:22"
+      ]
+    },
+    {
+      "src": "tag:admin-a",
+      "proto": "tcp",
+      "accept": [
+        "tag:relay-a:22",
+        "tag:target-a:22",
+        "tag:game-a:22"
+      ],
+      "deny": [
+        "tag:relay-b:22",
+        "tag:relay-c:22"
+      ]
+    },
+    {
+      "src": "tag:client-b",
+      "proto": "tcp",
+      "accept": [
+        "tag:target-a:8081",
+        "tag:relay-a:22",
+        "tag:game-a:25565",
+        "tag:target-b:8081",
+        "tag:relay-b:22",
+        "tag:game-b:25565",
+        "tag:target-c:8081",
+        "tag:relay-c:22",
+        "tag:game-c:25565"
+      ],
+      "deny": [
+        "tag:target-a:22",
+        "tag:game-a:22",
+        "tag:admin-a:22",
+        "tag:relay-a:443",
+        "tag:target-b:22",
+        "tag:game-b:22",
+        "tag:admin-b:22",
+        "tag:relay-b:443",
+        "tag:target-c:22",
+        "tag:game-c:22",
+        "tag:admin-c:22",
+        "tag:relay-c:443"
+      ]
+    },
+    {
+      "src": "tag:client-b",
+      "proto": "udp",
+      "accept": [
+        "tag:game-a:34197",
+        "tag:game-b:34197",
+        "tag:game-c:34197"
+      ],
+      "deny": [
+        "tag:target-a:34197",
+        "tag:target-b:34197",
+        "tag:target-c:34197"
+      ]
+    },
+    {
+      "src": "tag:target-b",
+      "proto": "tcp",
+      "deny": [
+        "tag:client-a:22",
+        "tag:relay-a:22",
+        "tag:target-a:22",
+        "tag:game-a:22",
+        "tag:admin-a:22",
+        "tag:client-b:22",
+        "tag:relay-b:22",
+        "tag:target-b:22",
+        "tag:game-b:22",
+        "tag:admin-b:22",
+        "tag:client-c:22",
+        "tag:relay-c:22",
+        "tag:target-c:22",
+        "tag:game-c:22",
+        "tag:admin-c:22"
+      ]
+    },
+    {
+      "src": "tag:admin-b",
+      "proto": "tcp",
+      "accept": [
+        "tag:relay-b:22",
+        "tag:target-b:22",
+        "tag:game-b:22"
+      ],
+      "deny": [
+        "tag:relay-a:22",
+        "tag:relay-c:22"
+      ]
+    },
+    {
+      "src": "tag:client-c",
+      "proto": "tcp",
+      "accept": [
+        "tag:target-a:8081",
+        "tag:relay-a:22",
+        "tag:game-a:25565",
+        "tag:target-b:8081",
+        "tag:relay-b:22",
+        "tag:game-b:25565",
+        "tag:target-c:8081",
+        "tag:relay-c:22",
+        "tag:game-c:25565"
+      ],
+      "deny": [
+        "tag:target-a:22",
+        "tag:game-a:22",
+        "tag:admin-a:22",
+        "tag:relay-a:443",
+        "tag:target-b:22",
+        "tag:game-b:22",
+        "tag:admin-b:22",
+        "tag:relay-b:443",
+        "tag:target-c:22",
+        "tag:game-c:22",
+        "tag:admin-c:22",
+        "tag:relay-c:443"
+      ]
+    },
+    {
+      "src": "tag:client-c",
+      "proto": "udp",
+      "accept": [
+        "tag:game-a:34197",
+        "tag:game-b:34197",
+        "tag:game-c:34197"
+      ],
+      "deny": [
+        "tag:target-a:34197",
+        "tag:target-b:34197",
+        "tag:target-c:34197"
+      ]
+    },
+    {
+      "src": "tag:target-c",
+      "proto": "tcp",
+      "deny": [
+        "tag:client-a:22",
+        "tag:relay-a:22",
+        "tag:target-a:22",
+        "tag:game-a:22",
+        "tag:admin-a:22",
+        "tag:client-b:22",
+        "tag:relay-b:22",
+        "tag:target-b:22",
+        "tag:game-b:22",
+        "tag:admin-b:22",
+        "tag:client-c:22",
+        "tag:relay-c:22",
+        "tag:target-c:22",
+        "tag:game-c:22",
+        "tag:admin-c:22"
+      ]
+    },
+    {
+      "src": "tag:admin-c",
+      "proto": "tcp",
+      "accept": [
+        "tag:relay-c:22",
+        "tag:target-c:22",
+        "tag:game-c:22"
+      ],
+      "deny": [
+        "tag:relay-a:22",
+        "tag:relay-b:22"
+      ]
+    }
+  ]
+}

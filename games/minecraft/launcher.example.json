@@ -1,0 +1,9 @@
+{
+  "game_directory": "/ABSOLUTE/PRIVATE/PATH/minecraft",
+  "java_binary": "/ABSOLUTE/PATH/TO/java",
+  "java_major": 25,
+  "memory_mib": 2048,
+  "artifact_sha256": "REPLACE_WITH_VERIFIED_SERVER_JAR_SHA256",
+  "bind_ip": "REPLACE_WITH_ASSIGNED_TAILSCALE_IPV4",
+  "isolation_verified": false
+}
