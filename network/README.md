@@ -9,6 +9,8 @@ This folder contains public instructions and synthetic examples. Its addresses d
 | Learn Wi-Fi, HTTP and Arduino serial | Offline bench | Experimental access point, separate test computer; no home uplink |
 | Share a Pico web exercise remotely | Dedicated firewall and trusted relay | Supported firewall with separate networks; Linux relay |
 | Use one router for home and lab | One capable firewall with independent zones | Verified port/VLAN and firewall support; household gateway remains trusted |
+| Put a firewall before the retained home router | Edge firewall with a separate home-transit network | Compatible maintained pfSense/OPNsense hardware, enough ports/VLANs and a planned household cutover |
+| Give home and lab separate upstream connections | WAN-only handoff switch and two trusted WANs | Explicit provider support for simultaneous connections/addresses; no LAN equipment on the handoff switch |
 | Share a Linux target directly over VPN | Host VPN inside a contained segment | Linux board/PC, restricted VPN policy, explicitly reviewed Internet egress |
 | Host games | Separate service segment and host VPN | Suitable Linux/PC server; game software and sufficient resources |
 | Experiment with router firmware/exploits | Experimental router downstream of containment | Separate trusted firewall, or completely offline bench |
@@ -18,7 +20,7 @@ The number of boxes is secondary. A router combining a home network with a corre
 Read in this order:
 
 1. [Architectures and networking vocabulary](ARCHITECTURES.md).
-2. [Build the dedicated OpenWrt boundary](OPENWRT.md).
+2. Choose the implementation: [dedicated OpenWrt boundary](OPENWRT.md) or [pfSense/OPNsense edge and split-uplink setup](PFSENSE-OPNSENSE.md).
 3. [Connect participants through a private tunnel](REMOTE-ACCESS.md).
 4. [Verify isolation and run a session](VALIDATION.md).
 5. [WireGuard alternative](wireguard/README.md), when endpoint routing is understood.
@@ -31,6 +33,6 @@ python3 network/generate_firewall.py network/site.example.json
 python3 -m unittest discover -s network -p 'test_*.py'
 ```
 
-The generator cannot identify physical ports, configure a switch, validate a router model or prove that a deployed network is isolated. Hardware checks and the validation procedure are required before enabling access. The supplied profile intentionally keeps targets offline; HTTPS Internet access for the trusted relay starts disabled.
+The generator cannot identify physical ports, configure a switch, validate a router model or prove that a deployed network is isolated. It targets OpenWrt's dedicated behind-router profile; it does not implement pfSense/OPNsense, the edge home-transit network or the game-services network. Those designs use their explicit interface/rule matrices. Hardware checks and the validation procedure are required before enabling access. The supplied profile intentionally keeps targets offline; HTTPS Internet access for the trusted relay starts disabled.
 
 Software references were checked on **2026-09-11**. Hardware-specific firmware and installed versions must be checked at deployment. Some OpenWrt documentation pages returned a browser challenge; indexed official documentation and the official firewall4 source were used together.

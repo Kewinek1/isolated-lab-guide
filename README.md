@@ -20,22 +20,23 @@ Open **http://127.0.0.1:8765**. Stop with Ctrl+C. The server listens only on the
 
 The custom monochrome application includes:
 
-- Five selectable architectures, three site presets, labelled vector diagrams and packet walkthroughs.
+- Seven selectable architectures, three site presets, labelled vector diagrams and packet walkthroughs.
 - Editable labels and IPv4 /24 planning addresses, with overlap and input checks.
-- Original SVG figures that export exclusively from fictional defaults.
+- A firewall software selector for pfSense, OPNsense and OpenWrt, with platform-appropriate instructions.
+- Original SVG figures that export exclusively from fictional defaults, including the edge-firewall and conditional split-ISP layouts.
 - A complete handbook, device exercises, game instructions and sources.
-- **Print / PDF**, which prepares all chapters and all five architecture figures. A local edition adds its private inventory and guide.
+- **Print / PDF**, which prepares all chapters and all seven architecture figures. A local edition adds its private inventory and guide.
 
 For a browser-only public link, follow [Publish on GitHub](docs/PUBLISHING.md). The included GitHub Actions workflow builds and deploys a static Pages site after Pages is enabled in repository settings. Readers need no Python installation. The local server remains available for offline and private use.
 
 ## Reading and implementation order
 
 1. [Start here](docs/START-HERE.md) and [networking foundations](docs/01-foundations.md).
-2. [Compare the architectures](network/ARCHITECTURES.md). Router count alone is not a security property.
+2. [Compare the architectures](network/ARCHITECTURES.md) and [pfSense, OPNsense and OpenWrt](docs/PLATFORMS.md). Router count alone is not a security property.
 3. [Build the offline bench](docs/03-build.md). The current microcontroller exercises require no Linux Raspberry Pi.
 4. [Run the Uno, Pico W and Linux lessons](firmware/README.md).
 5. [Inspect router firmware offline](docs/FIRMWARE-ANALYSIS.md).
-6. [Prepare a dedicated firewall](network/OPENWRT.md), then [verify isolation](network/VALIDATION.md).
+6. Prepare a dedicated [OpenWrt firewall](network/OPENWRT.md) or follow the [pfSense / OPNsense implementation](network/PFSENSE-OPNSENSE.md), then [verify isolation](network/VALIDATION.md).
 7. [Enroll participants and restrict remote access](network/REMOTE-ACCESS.md); [WireGuard](network/wireguard/README.md) is an alternative.
 8. [Host Minecraft or Factorio](games/README.md) in a separately configured services zone.
 9. [Operate and recover](docs/06-operations.md); complete the [private worksheets](docs/07-worksheets.md).
@@ -50,6 +51,7 @@ The strict firewall generator creates uplink, management, relay and target-zone 
 | Pico W MicroPython service | `firmware/pico_w/main.py` | Network disabled in example configuration |
 | Linux access-control lesson | `firmware/linux_target/server.py` | Loopback; explicit lesson mode |
 | Public firmware image inspection | `tools/inspect_firmware.py` | Local file only; no extraction or execution |
+| pfSense / OPNsense implementation | `network/PFSENSE-OPNSENSE.md` | Manual interface/rule worksheet; no generated import |
 | Dedicated OpenWrt candidate | `network/generate_firewall.py` | Draft output; no application |
 | Tailscale roles and policy tests | `network/tailscale.policy.json` | Explicit role/service grants |
 | Restricted SSH relay | `network/sshd-relay.conf.example` | Forward-only participant accounts |
@@ -71,7 +73,7 @@ python3 tools/materialize.py --private-dir ../private
 
 This creates `../private/build/`, containing a private code copy, freshly generated lesson tokens and disabled Pico network configuration. With unconfirmed addresses, the firewall is deliberately not generated. The builder refuses to overwrite an existing build.
 
-The workbench’s **Download code inputs** button also produces this exact input schema after **Update diagram** saves a valid plan. It preserves custom Pico/Linux target addresses while leaving network enablement and confirmation flags false. Store that download as `config.local.json` outside this repository. The private plan download is a separate worksheet, not the builder input.
+The workbench’s **Download code inputs** button also produces this exact input schema after **Update diagram** saves a valid plan. It preserves custom Pico/Linux target addresses, `firewall_platform` and `architecture`, while leaving network enablement and confirmation flags false. Only the dedicated `openwrt` + `tunnel` combination can produce a firewall candidate after both confirmations. pfSense, OPNsense, edge/split and other layouts produce an explanatory note and the inert lesson code. Older builder inputs without these two optional fields retain the original OpenWrt/tunnel defaults. The home-transit and services subnets are planning fields in the separate private-plan worksheet; they do not configure those zones. Store that download as `config.local.json` outside this repository. The private plan download is a separate worksheet, not the builder input.
 
 Edit actual subnets and the installation country privately. Set confirmation flags only after the corresponding network checks. Wi-Fi enablement also needs the isolated lab SSID and password. For a later build, preserve or rename the existing build first. Game worlds and filled launcher configurations belong in a private runtime directory **outside the generated build**; this also satisfies the copied launcher's public-source-directory guard.
 
@@ -115,6 +117,8 @@ Node is needed only for the optional JavaScript tests, not to run the manual. Th
 - **Isolation versus tunnelling:** a firewall contains a compromised target; a tunnel protects transport and grants remote reachability.
 - **A trusted firewall versus an experimental router:** the component enforcing containment stays maintained and outside the attack scope.
 - **A real DMZ versus a consumer DMZ host:** a real DMZ is a separated network; the consumer setting commonly forwards incoming traffic broadly to one host.
+- **An ISP switch versus extra public addresses:** the split-ISP design requires provider support for both WAN connections; a switch creates neither leases nor firewall protection.
+- **Docker versus a separate computer:** Linux containers share their host kernel. Keep the entire target host behind the trusted firewall and keep trusted roles off that host.
 - **An available appliance versus supported hardware:** exact board revision, CPU, storage and current firmware support must be verified before installing an image.
 
 Primary references are linked beside relevant claims throughout the handbook and collected in [Sources](docs/SOURCES.md). No specific unknown appliance is assumed compatible.

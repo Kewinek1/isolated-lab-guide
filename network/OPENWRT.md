@@ -2,6 +2,8 @@
 
 This recipe is for a **dedicated, maintained OpenWrt firewall using firewall4**, with physical recovery access. It replaces that appliance's firewall configuration. It is not a firmware flashing guide and must not be applied to a household gateway that also serves everyday devices.
 
+For a pfSense/OPNsense firewall at the edge, or a provider-supported split WAN handoff, use [the separate platform procedure](PFSENSE-OPNSENSE.md). OpenWrt UCI is not their configuration language. This generator creates only `uplink`, `mgmt`, `relay` and `lab`; it does not supply edge HOME_TRANSIT, a game-services interface or a BSD/XML import.
+
 ## Check the hardware before configuration
 
 Record the exact model, hardware revision, flash/RAM, processor architecture, port count and existing firmware privately. Look up the exact revision in the [OpenWrt Table of Hardware](https://openwrt.org/toh/start) and its device installation page. Similar cases and colors do not establish compatibility. Small legacy 4 MB flash/32 MB RAM devices are unsuitable as a current maintained security boundary; an unsupported experimental router stays downstream or offline. [OpenWrt warning about 4/32 devices](https://openwrt.org/supported_devices/432_warning).

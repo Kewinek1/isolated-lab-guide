@@ -6,6 +6,10 @@ Targets are disposable. Game saves, firewall configuration and enrollment author
 
 Run game servers as a dedicated unprivileged OS account inside the services zone. Keep games out of the attack target image. A separate physical host is the simplest strong separation; a carefully configured hypervisor with distinct networks can be a later alternative.
 
+The diagrams showing several Docker images on a Pi describe application packaging, not independent kernels. Host bridges, VLAN interfaces and container networking determine the actual packet path. The [platform guide](PLATFORMS.md) explains that boundary and the current optional CrowdSec integration differences. CrowdSec stays outside the baseline acceptance decision: home remains protected even when an optional detection service is stopped.
+
+For **edge**, schedule firewall upgrades as household internet maintenance and preserve a way to restore the previous uplink. For **split**, retain the provider's simultaneous-connection requirements and update protected home public endpoints when leases change. If that endpoint inventory becomes uncertain, stop the affected lab egress until the rules and tests agree again. The WAN-only switch is never repurposed as a convenient home or lab LAN expansion port.
+
 ## Routine cycle
 
 | Moment | Action | Evidence |

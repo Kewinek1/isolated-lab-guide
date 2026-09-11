@@ -55,6 +55,8 @@ A **listening address**, also called a bind address, limits which local address 
 
 **CGNAT** means the internet provider also shares an upstream IPv4 address between customers. Changing a home router cannot create a port forward through the provider's NAT. An overlay connection can often establish outbound connectivity or relay traffic instead.
 
+An **ISP handoff** is the connection where the provider delivers service, often through a modem or an optical network terminal (**ONT**). A handoff can deliver one address, several approved leases/sessions, a routed address block or a private network behind another router. These are different services. Connecting a switch does not change the provider's allocation. In **bridge mode**, suitable provider equipment passes the link through instead of acting as an additional home NAT router; the exact provider instructions determine whether that mode is available.
+
 A **VPN tunnel** encrypts traffic between endpoints. An **overlay** gives participating devices an additional logical network over existing internet connections. Encryption protects traffic in transit; an access rule decides who can reach a service. Neither prevents a compromised target from using its ordinary Ethernet or Wi-Fi connection to reach nearby devices.
 
 ## Separation and privilege

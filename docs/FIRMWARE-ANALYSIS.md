@@ -72,6 +72,8 @@ OPNsense's official platform is x86_64; its recommended sizing is higher than it
 
 The proposed small firewall computer must be identified before assigning software or ports. Case colour is insufficient. No flashing command is justified without the exact hardware revision and documented recovery method.
 
+The fuller [platform comparison](PLATFORMS.md) explains release workflows, extension ecosystems and CrowdSec. The [edge/split architectures](02-architectures.md) place these platforms in two possible network positions; neither diagram identifies the appliance or authorizes replacing its firmware. The platform-specific commissioning path is in [pfSense/OPNsense setup](../network/PFSENSE-OPNSENSE.md).
+
 ## Reverse proxy, tunnel and DMZ are different jobs
 
 A **reverse proxy** receives an application request and forwards it to a backend service. An HTTP reverse proxy can terminate TLS and apply application authentication. It does not generally carry arbitrary port scans, all TCP/UDP protocols, or Factorio UDP unless the selected product explicitly supports that transport. A public proxy also makes the backend application reachable through a public entry point.

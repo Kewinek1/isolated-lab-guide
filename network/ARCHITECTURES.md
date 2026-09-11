@@ -90,6 +90,39 @@ Game servers belong on a clean service host or service VLAN, separate from machi
 
 The strict OpenWrt profile has a relay zone, not a full game-services zone. A separate game host needs its own service zone and explicit egress rules, or the documented one-capable-firewall service scenario. Co-hosting games and an SSH relay joins their trust boundaries and is not the reference design. Game-server backups and accounts are kept outside attack-target images.
 
+## 6. Edge firewall before the retained household router
+
+```mermaid
+flowchart LR
+  I[ISP handoff] --- F[Trusted edge firewall]
+  F --- HT[HOME_TRANSIT: separate network]
+  HT --- HW[Household router WAN]
+  HW --- H[Household LAN and Wi-Fi]
+  F --- M[MGMT]
+  F --- R[RELAY]
+  F --- L[LAB]
+  F --- S[SERVICES]
+```
+
+This places the trusted firewall before household Internet traffic and local lab traffic at each site. The retained household router connects by its **WAN** socket to a separate transit network, such as `10.81.10.0/24` at site A. Its actual household LAN subnet is recorded privately and must not overlap any firewall segment. With routing/NAT on both devices, home traffic undergoes double NAT. This can affect applications, and the new firewall becomes part of household Internet availability.
+
+Each internal role needs an independent port or correctly assigned VLAN; the complete edge plan has WAN plus five internal interfaces. A router-as-AP migration is a different design because it removes the retained router's routing boundary. Follow the [pfSense/OPNsense setup and cutover procedure](PFSENSE-OPNSENSE.md) for the edge rule matrix.
+
+## 7. Split the ISP handoff between two trusted WANs
+
+```mermaid
+flowchart LR
+  I[ISP handoff: two concurrent connections authorized] --- W[WAN-only switch]
+  W --- H[Household router WAN]
+  H --- D[Household LAN and Wi-Fi]
+  W --- F[Lab firewall WAN]
+  F --- R[Separate relay / lab / management / services]
+```
+
+This is conditional on the provider's actual address-delivery arrangement. A switch does not create another public IP, another DHCP lease or isolation between its ports. A routed public subnet delivered through one router is different from two directly available WAN leases. Without confirmed simultaneous service, the layout is not a working substitute for the edge or behind-router design.
+
+Only the ISP handoff and the two trusted **WAN** interfaces attach to the WAN-only switch. No household LAN socket, target or administration machine belongs there. Both WANs share an untrusted link; the lab firewall still blocks new target connections, and permitted relay/services egress must exclude the household's actual WAN/public endpoints. The [split-uplink procedure](PFSENSE-OPNSENSE.md) describes provider checks and rollback.
+
 ## DMZ, port forwarding, NAT and CGNAT
 
 **NAT** rewrites addresses as packets cross a router. **Port forwarding** deliberately sends selected incoming traffic to an inside host. Many consumer routers call an “all unsolicited incoming traffic to one host” setting **DMZ host**. That setting does not create an isolated network and must remain off for this baseline. A real **DMZ network** is a separate firewall zone with explicit restrictions toward home and management.
@@ -105,6 +138,8 @@ All values below are synthetic. Replace any conflicting subnet across every rela
 | Lab | `10.77.10.0/24` | `10.77.20.0/24` | `10.77.30.0/24` |
 | Relay | `10.78.10.0/24` | `10.78.20.0/24` | `10.78.30.0/24` |
 | Management | `10.79.10.0/24` | `10.79.20.0/24` | `10.79.30.0/24` |
+| Services, separately configured | `10.80.10.0/24` | `10.80.20.0/24` | `10.80.30.0/24` |
+| Home transit, edge design only | `10.81.10.0/24` | `10.81.20.0/24` | `10.81.30.0/24` |
 | Gateway in each segment | `.1` | `.1` | `.1` |
 | Linux target / Pico | `.20` / `.30` | `.20` / `.30` | `.20` / `.30` |
 | Relay / management workstation | `.2` / `.2` | `.2` / `.2` | `.2` / `.2` |

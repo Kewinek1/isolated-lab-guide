@@ -26,8 +26,12 @@ For the introductory firmware, USB power and the built-in LED are sufficient. Cl
 | Remote target exercises | Above, plus tested trusted boundary and an always-on Linux access gateway |
 | Private game server | Trusted services segment and suitably sized Linux computer; x86_64 for the supplied Factorio workflow |
 | VLAN expansion | VLAN-capable firewall and any intermediate switch/access point carrying multiple zones |
+| Edge firewall before home | Supported firewall with distinct HOME, management, relay, targets and services roles, plus WAN; household maintenance/recovery plan |
+| Parallel WAN split | Provider-confirmed concurrent WAN connections and a WAN-only switch; independent home and maintained lab routers |
 
 An old computer can fill the Linux role; no purchase is implied before its capabilities are assessed. A network adapter adds an interface, but separate interfaces still need correct routing and firewall rules. Linux installation guidance is available in the [Raspberry Pi computer getting-started documentation](https://www.raspberrypi.com/documentation/computers/getting-started.html).
+
+The two new topology options are explained in [architecture choices](02-architectures.md). A WAN-only unmanaged switch can extend one untrusted provider link in the conditional split design. A switch distributing home/lab VLANs has a different job and needs managed VLAN configuration. Neither topology establishes that an unidentified red appliance can run current pfSense or OPNsense. [Platform and hardware comparison](PLATFORMS.md)
 
 ## Commission in small steps
 
@@ -40,6 +44,10 @@ An old computer can fill the Linux role; no purchase is implied before its capab
 7. Execute the acceptance matrix with benign test hosts. Treat an inconclusive negative test as unresolved.
 8. Establish remote access to one target and one permitted port. Record an allowed result and a denied result before broadening scope.
 9. Add services on their own zone. Run game servers only after service-to-home and target-to-service denials pass.
+
+For an edge deployment, rehearse the configuration with disposable hosts before moving the home's uplink; keep a documented way to restore the previous home connection. For a split deployment, confirm the ISP handoff and both simultaneous WAN sessions first. Never connect a target or home LAN directly to the proposed WAN switch to investigate a missing second lease.
+
+The local build input records `firewall_platform` and `architecture`. Automatic firewall-candidate generation applies only to the supplied **OpenWrt + tunnel** reference. pfSense, OPNsense, edge and split use the documented manual commissioning paths. Their lesson firmware can still be prepared; receiving firmware files does not mean a firewall configuration was generated or deployed.
 
 ## Receiving another router or firewall
 

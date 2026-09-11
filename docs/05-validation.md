@@ -28,10 +28,17 @@ The network probe tools supplied elsewhere in this repository are diagnostic aid
 | Internet, outside overlay | Experiment service | No public reachability |
 | After firewall reboot | Repeat positive/negative checks | Same policy persists |
 | After overlay disconnect/revocation | Previously permitted remote access | No new connection succeeds |
+| Edge targets/relay/services | HOME transit host and protected home endpoint | Denied at the edge firewall; home router alone is not the sole evidence |
+| Edge home client | Ordinary approved internet service | Works with the chosen router/AP mode and documented NAT behavior |
+| Split provider handoff | Both router WAN connections active simultaneously | Provider-approved leases/sessions and expected routing; no assumption from switch link lights |
+| Split target | Home router's public WAN/IPv6 endpoint | Denied by lab policy; test address aliases and return-through-public paths |
+| VLAN target host/container | Other target/service/management VLANs | No unapproved path through host bridges, forwarding or shared container privileges |
 
 Do not mark tests “pass” when hardware or an IPv6 test destination is unavailable. Mark them **not tested** and keep the corresponding deployment stage unapproved. IPv6 link-local addresses require an interface scope and are not routed across normal boundaries; check that targets do not share a protected link as well as checking routed addresses.
 
 Before changing policy, prepare a local console or known recovery port and a configuration backup. Keep the target uplink disconnected until the new policy is in place. A firewall management lockout is a recovery problem, not a reason to temporarily bridge the lab to home.
+
+In a split deployment, a WAN address shown by a router is classified against the recorded provider contract and actual route. A private or shared CGNAT address must not be relabeled as a public address to match the drawing. In an edge deployment, record and test the household rollback path before changing the live ISP attachment. A diagram and a passing configuration syntax check do not prove either condition.
 
 ## A learning sequence
 

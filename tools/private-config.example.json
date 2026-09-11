@@ -15,5 +15,7 @@
   },
   "relay_internet_https": false,
   "target_ip": "10.77.10.20",
-  "pico_ip": "10.77.10.30"
+  "pico_ip": "10.77.10.30",
+  "firewall_platform": "openwrt",
+  "architecture": "tunnel"
 }

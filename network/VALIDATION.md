@@ -34,7 +34,7 @@ Stop the temporary listener after the test. For IPv6, create a listener using `-
 
 | Origin | Check | Expected result |
 |---|---|---|
-| Local management `.2` | Firewall SSH 22 / HTTPS 443 | Works; verify a second session after reboot |
+| Local management `.2` | Firewall HTTPS 443 and SSH 22 if explicitly enabled | Works; verify a second session after applying rules/restarting |
 | Lab test computer | IPv4 address on correct lab subnet | Works via DHCP or static configuration |
 | Lab test computer | Router administration on all its interface addresses | Denied |
 | Lab test computer | Known listener on household test host | Denied |
@@ -63,7 +63,19 @@ nft list ruleset
 logread
 ```
 
+On pfSense or OPNsense, use the interface rules, automatic rules, logs and filtered state views in the selected GUI. Inspect both IP families, floating/group rules, the initial LAN allow-any rules and anti-lockout exception. A rule allowing replies through existing state is different from permitting a new connection. The [platform procedure](PFSENSE-OPNSENSE.md) specifies rule order and management recovery; do not run OpenWrt commands on those systems.
+
 Record the rule that matched, the initiating segment, the actual destination and result. Keep that evidence private because addresses and device identities may be included. Public session reports retain role labels and outcomes only.
+
+## Additional checks for edge and split-uplink designs
+
+For the **edge firewall**, verify HOME_TRANSIT is separate from the actual household LAN and every lab role. The retained router's WAN receives its transit address; its LAN/Wi-Fi use the recorded household subnet. Before attaching targets, check household DNS, browsing, console sign-in and any application affected by double NAT. Record whether household IPv6 is separately configured or unavailable in the IPv4 baseline.
+
+For a **split handoff**, establish provider permission for two simultaneous connections, then verify both router WANs work and renew while connected together. The switch contains only the ISP handoff and trusted WAN ports. A second temporary lease does not establish provider support, and a routed address block is not a promise of two DHCP leases.
+
+For either design, test LAB denial to the household's actual LAN, router WAN and public endpoints. Also test relay/services denial to those endpoints, including when the household WAN is public or shares the same upstream Ethernet segment. Protect new/dynamic household addresses before continuing egress. Use a consented known listener rather than interpreting a timeout on a closed router-management port as proof.
+
+Before changing the ISP cable, retain the original connection settings and cable path. Test the [documented rollback](PFSENSE-OPNSENSE.md#cutover-and-acceptance) while the new lab remains disconnected. Review affected lab/relay states after rule changes; a planned state removal or controlled restart is needed when an old permitted connection would otherwise survive. A full edge-firewall state reset can interrupt household sessions.
 
 ## A session has a beginning and an end
 
@@ -71,4 +83,4 @@ Before starting, agree on target identifiers, permitted ports/protocols, the exe
 
 Use disposable accounts and data. Keep reset images and a physical disconnect available. The first exercises are requests to a toy web app and serial commands, followed by observation of the intended insecure and corrected behavior. Save game worlds separately from attack images.
 
-If a forbidden path succeeds: stop the exercise, unplug the trusted firewall's uplink and target cables, and correct the route/bridge/rule problem locally. Reboot the boundary with targets disconnected to remove stale connection state, then repeat the acceptance checks. Ending a session includes stopping targets, removing temporary permissions and revoking identities of rebuilt/compromised hosts.
+If a forbidden path succeeds: stop the exercise and disconnect the target networks. For a dedicated lab firewall, also disconnect its uplink; for a shared edge firewall, preserve or restore the household's planned safe path. Correct the route/bridge/rule problem locally, remove affected stale connection state or perform a controlled restart, then repeat the acceptance checks. Ending a session includes stopping targets, removing temporary permissions and revoking identities of rebuilt/compromised hosts.

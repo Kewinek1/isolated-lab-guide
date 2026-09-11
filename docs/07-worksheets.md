@@ -17,6 +17,22 @@ These are blank public templates. Filled copies belong in private storage outsid
 | Reset/recovery procedure and backup location | REPLACE_RECOVERY |
 | Power supply and data cable requirements | REPLACE_POWER |
 
+## ISP handoff and topology record
+
+| Field | Private value |
+|---|---|
+| Selected scenario | offline / behindrouter / edge / split |
+| Handoff equipment and mode | REPLACE_MODEM_ONT_OR_ROUTED_GATEWAY |
+| Provider address delivery | REPLACE_SINGLE_LEASE_MULTIPLE_LEASES_SESSION_OR_ROUTED_BLOCK |
+| Simultaneous permitted connections | REPLACE_PROVIDER_CONFIRMED_LIMIT |
+| Required authentication, VLAN or device registration | Private configuration reference; no secret in this table |
+| IPv4 status of each WAN | REPLACE_PUBLIC_PRIVATE_OR_SHARED_CGNAT |
+| IPv6 prefix allocation and protection | REPLACE_VERIFIED_PREFIX_POLICY |
+| Edge HOME port/VLAN and retained router/AP mode | REPLACE_HOME_ASSIGNMENT |
+| Split WAN-only switch port inventory | REPLACE_WAN_PORT_ASSIGNMENT |
+| Home public aliases/endpoints blocked from lab | REPLACE_PROTECTED_ENDPOINT_REFERENCE |
+| Household maintenance and rollback method | REPLACE_REHEARSED_ROLLBACK |
+
 ## Scope record
 
 | Field | Private value |

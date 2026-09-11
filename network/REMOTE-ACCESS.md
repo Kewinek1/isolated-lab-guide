@@ -4,6 +4,8 @@ The reference uses one dedicated Tailscale network, called a **tailnet**, for re
 
 The strict route is **workstation → VPN → forwarding account on relay → one target TCP service**. The firewall's lab segment remains offline. The same policy also provides optional direct Linux target and game-server roles, which require separately configured service/target egress as explained in the architecture guide.
 
+This relay pattern also applies behind the [pfSense/OPNsense edge or split-uplink designs](PFSENSE-OPNSENSE.md). Use that platform's RELAY inbound rule list for the exact destination exceptions. Moving WireGuard onto the firewall itself is a separate tunnel-interface policy with its own reachable endpoint; no general VPN-to-LAN permission is implied. The Linux `wg-quick` files and OpenWrt UCI candidate cannot be imported as pfSense/OPNsense configuration.
+
 ## Define roles before enrolling devices
 
 The included [tailscale.policy.json](tailscale.policy.json) contains no personal identity or actual VPN address. It uses three site labels and distinct device tags:

@@ -18,10 +18,12 @@ test('each site has independent valid fictional networks and target roles', () =
     assert.equal(plan.labCidr, `10.77.${(index + 1) * 10}.0/24`);
     assert.equal(plan.target, `10.77.${(index + 1) * 10}.20`);
     assert.equal(plan.pico, `10.77.${(index + 1) * 10}.30`);
+    assert.equal(plan.homeTransitCidr, `10.81.${(index + 1) * 10}.0/24`);
+    assert.equal(plan.firewallPlatform, 'openwrt');
     assert.equal(plan.homeCidr, '');
     assert.match(plan.relayHost, /\.example\.invalid$/);
   }
-  assert.equal(new Set(plans.flatMap(p => [p.labCidr, p.relayCidr, p.managementCidr, p.serviceCidr])).size, 12);
+  assert.equal(new Set(plans.flatMap(p => [p.labCidr, p.relayCidr, p.managementCidr, p.serviceCidr, p.homeTransitCidr])).size, 15);
   plans[0].mainRouter = 'Private temporary label';
   assert.equal(sample('A').mainRouter, 'Home router');
 });
@@ -38,7 +40,7 @@ test('IPv4 and /24 parsing rejects ambiguous, malformed and non-network values',
 });
 
 test('overlapping segments and invalid host assignments block plan acceptance', () => {
-  for (const field of ['relayCidr', 'managementCidr', 'serviceCidr', 'homeCidr']) {
+  for (const field of ['relayCidr', 'managementCidr', 'serviceCidr', 'homeTransitCidr', 'homeCidr']) {
     const plan = sample('A');
     plan[field] = plan.labCidr;
     assert.ok(validate(plan).some(error => /distinct subnets/.test(error)), field);
@@ -68,8 +70,8 @@ test('untrusted labels and connection destinations cannot inject markup or shell
   assert.ok(rendered.includes('&lt;svg/onload=1&gt;'));
 });
 
-test('all five scenarios produce complete diagrams, five teaching steps and coherent address tables', () => {
-  assert.deepEqual(scenarios.map(s => s.id), ['offline', 'single', 'tunnel', 'games', 'dmz']);
+test('all seven scenarios produce complete diagrams, five teaching steps and coherent address tables', () => {
+  assert.deepEqual(scenarios.map(s => s.id).sort(), ['dmz', 'edge', 'games', 'offline', 'single', 'split', 'tunnel']);
   for (const site of ['A', 'B', 'C']) {
     const plan = sample(site);
     for (const scenario of scenarios) {
@@ -111,19 +113,119 @@ test('commands preserve scoped relay bindings and distinguish game protocols', (
 
 test('public SVG export rebuilds fictional examples and excludes operational plan values', () => {
   assert.equal(typeof model.publicFigure, 'function', 'Public export must use a testable model entry point');
-  const privatePlan = {...sample('B'), mainRouter: 'PRIVATE_ROUTER_MARKER', labRouter: 'PRIVATE_LAB_MARKER',
-    firewall: 'PRIVATE_FIREWALL_MARKER', pico: '192.168.222.30', target: '192.168.222.20',
-    labCidr: '192.168.222.0/24', relayHost: 'private-relay.invalid', gameHost: 'private-games.invalid'};
+  const privatePlan = {...sample('B'), mainRouter: 'SECRET_EDGE_ROUTER', labRouter: 'SECRET_LAB_ROUTER',
+    firewall: 'SECRET_FIREWALL', pico: '192.168.222.30', target: '192.168.222.20',
+    labCidr: '192.168.222.0/24', relayHost: 'private-relay.invalid', gameHost: 'private-games.invalid',
+    homeTransitCidr: '172.31.223.0/24', relayCidr: '172.31.224.0/24',
+    managementCidr: '172.31.225.0/24', serviceCidr: '172.31.226.0/24', homeCidr: '172.31.227.0/24',
+    firewallPlatform: 'opnsense'};
   for (const scenario of scenarios) {
     // The public export accepts the site selector, not any current plan object.
     const exported = model.publicFigure(scenario.id, privatePlan.site, privatePlan);
     assert.match(exported, /^<svg\s/);
     assert.ok(exported.includes('PUBLIC EXAMPLE'));
-    for (const value of ['PRIVATE_ROUTER_MARKER', 'PRIVATE_LAB_MARKER', 'PRIVATE_FIREWALL_MARKER',
-      '192.168.222.', 'private-relay.invalid', 'private-games.invalid']) {
+    for (const value of ['SECRET_EDGE_ROUTER', 'SECRET_LAB_ROUTER', 'SECRET_FIREWALL',
+      '192.168.222.', '172.31.223.', '172.31.224.', '172.31.225.', '172.31.226.', '172.31.227.',
+      'private-relay.invalid', 'private-games.invalid']) {
       assert.ok(!exported.includes(value), `${scenario.id} leaked ${value}`);
     }
     assert.equal(exported, model.publicFigure(scenario.id, 'B'));
+    if (['edge', 'split'].includes(scenario.id)) assert.ok(exported.includes('pfSense'));
+  }
+});
+
+test('home transit is a separate private network from every planned trust zone', () => {
+  const plan = {...sample('A'), homeCidr: '192.168.245.0/24'};
+  for (const field of ['labCidr', 'relayCidr', 'managementCidr', 'serviceCidr', 'homeCidr']) {
+    assert.ok(validate({...plan, homeTransitCidr: plan[field]}).some(error => /distinct subnets/.test(error)), field);
+  }
+  for (const value of ['', '10.81.10.1/24', '10.81.10.0/16', '100.64.10.0/24', '203.0.113.0/24', '::/64']) {
+    assert.ok(validate({...plan, homeTransitCidr: value}).some(error => error.startsWith('homeTransitCidr:')), value);
+  }
+  for (const value of ['10.230.1.0/24', '172.16.230.0/24', '172.31.230.0/24', '192.168.230.0/24']) {
+    assert.deepEqual(validate({...plan, homeTransitCidr: value}), [], value);
+  }
+});
+
+test('all internal subnet fields reject public and shared-address ranges', () => {
+  for (const field of ['labCidr', 'relayCidr', 'managementCidr', 'serviceCidr', 'homeTransitCidr', 'homeCidr']) {
+    for (const value of ['203.0.113.0/24', '100.64.10.0/24', '172.15.230.0/24', '172.32.230.0/24']) {
+      const plan = {...sample('A'), [field]: value};
+      if (field === 'labCidr') {
+        const prefix = value.split('.').slice(0, 3).join('.');
+        plan.target = prefix + '.20';
+        plan.pico = prefix + '.30';
+      }
+      assert.ok(validate(plan).some(error => error.startsWith(field + ':')), `${field}/${value}`);
+    }
+  }
+});
+
+test('firewall platform and architecture are explicit validated builder inputs', () => {
+  for (const platform of ['openwrt', 'pfsense', 'opnsense']) {
+    const plan = {...sample('B'), firewallPlatform: platform};
+    assert.deepEqual(validate(plan), []);
+    assert.equal(model.buildInputs(plan).architecture, 'tunnel');
+    for (const architecture of ['tunnel', 'edge', 'split']) {
+      const inputs = model.buildInputs(plan, architecture);
+      assert.equal(inputs.firewall_platform, platform);
+      assert.equal(inputs.architecture, architecture);
+      assert.equal(inputs.isolated_lab_confirmed, false);
+      assert.equal(inputs.relay_internet_https, false);
+    }
+  }
+  for (const platform of ['', 'unknown', 'pfSense', '<script>', 'openwrt;id', null]) {
+    const plan = {...sample('A'), firewallPlatform: platform};
+    assert.ok(validate(plan).length > 0, String(platform));
+    assert.throws(() => model.buildInputs(plan));
+  }
+  assert.throws(() => model.buildInputs(sample('A'), 'unknown'));
+});
+
+test('edge and split diagrams remain valid XML while escaping arbitrary labels', async () => {
+  const plan = {...sample('C'), mainRouter: 'Home & <unsafe>', labRouter: 'Lab & <unsafe>',
+    firewall: 'FW & <unsafe>', firewallPlatform: 'pfsense'};
+  const figures = [];
+  for (const id of ['edge', 'split']) {
+    const flow = steps(id, plan);
+    assert.equal(flow.length, 5);
+    for (const [, , active] of flow) {
+      const body = diagram(id, plan, active);
+      assert.ok(!body.includes('<unsafe>'), `${id}/${active}`);
+      assert.ok(body.includes('&amp;'), `${id}/${active}`);
+      assert.ok(!/undefined|NaN/.test(body), `${id}/${active}`);
+      assert.ok(body.includes(`data-node="${active}"`), `${id}: missing highlighted node ${active}`);
+      figures.push('<svg xmlns="http://www.w3.org/2000/svg">' + body + '</svg>');
+    }
+    figures.push(model.publicFigure(id, 'C'));
+  }
+  const directory = await mkdtemp(join(tmpdir(), 'diagram-xml-test-'));
+  try {
+    const fixture = join(directory, 'figures.json');
+    await writeFile(fixture, JSON.stringify(figures), {mode: 0o600});
+    const xmlCheck = spawnSync('python3', ['-c',
+      'import json,sys,xml.etree.ElementTree as ET; [ET.fromstring(x) for x in json.load(open(sys.argv[1]))]', fixture],
+      {encoding: 'utf8', timeout: 5000});
+    assert.equal(xmlCheck.status, 0, xmlCheck.stderr || String(xmlCheck.error || 'XML parsing failed'));
+  } finally {
+    await rm(directory, {recursive: true, force: true});
+  }
+});
+
+test('platform-specific command examples never apply OpenWrt rules to BSD or a different architecture', () => {
+  for (const platform of ['pfsense', 'opnsense']) {
+    for (const id of ['single', 'tunnel', 'edge', 'split']) {
+      const text = command(id, {...sample('A'), firewallPlatform: platform});
+      const executableLines = text.split('\n').filter(line => !/^\s*#/.test(line)).join('\n');
+      assert.ok(!/generate_firewall\.py|\b(?:uci|fw4|nft)\b/.test(executableLines), `${platform}/${id}`);
+      assert.ok(!/\bpfctl\s+(?:-f|-d|-e)\b|\bservice\s+\S+\s+(?:restart|reload|start|stop)\b/.test(executableLines), `${platform}/${id}`);
+    }
+  }
+  for (const id of ['edge', 'split']) {
+    const text = command(id, {...sample('A'), firewallPlatform: 'openwrt'});
+    const executableLines = text.split('\n').filter(line => !/^\s*#/.test(line)).join('\n');
+    assert.ok(executableLines.split('\n').every(line => !line.includes('generate_firewall.py') || /\s--help(?:\s|$)/.test(line)),
+      `Strict generator must not configure ${id}`);
   }
 });
 
@@ -169,6 +271,35 @@ test('edited plan JSON is consumed by the real private builder with custom addre
     const pico = await readFile(join(privateDirectory, 'build/firmware/pico_w/config.py'), 'utf8');
     assert.ok(pico.includes('ENABLE_NETWORK = False'));
     await assert.rejects(readFile(join(privateDirectory, 'build/network/firewall.candidate')));
+  } finally {
+    await rm(privateDirectory, {recursive: true, force: true});
+  }
+});
+
+test('confirmed private builds emit UCI only for the supported OpenWrt tunnel architecture', async () => {
+  const privateDirectory = await mkdtemp(join(tmpdir(), 'platform-builder-test-'));
+  const builder = fileURLToPath(new URL('../tools/materialize.py', import.meta.url));
+  try {
+    for (const platform of ['openwrt', 'pfsense', 'opnsense']) {
+      for (const architecture of ['tunnel', 'edge', 'split']) {
+        const destination = await mkdtemp(join(privateDirectory, `${platform}-${architecture}-`));
+        const plan = {...sample('A'), firewallPlatform: platform, homeCidr: '192.168.245.0/24'};
+        const inputs = {...model.buildInputs(plan, architecture), addresses_confirmed: true, isolated_lab_confirmed: true};
+        await writeFile(join(destination, 'config.local.json'), JSON.stringify(inputs), {mode: 0o600});
+        const result = spawnSync('python3', [builder, '--private-dir', destination], {
+          encoding: 'utf8', env: {...process.env, PYTHONDONTWRITEBYTECODE: '1'}, timeout: 10000,
+        });
+        assert.equal(result.status, 0, `${platform}/${architecture}: ${result.stderr}`);
+        const candidate = join(destination, 'build/network/firewall.candidate');
+        if (platform === 'openwrt' && architecture === 'tunnel') {
+          assert.match(await readFile(candidate, 'utf8'), /config defaults/);
+        } else {
+          await assert.rejects(readFile(candidate), {code: 'ENOENT'}, `${platform}/${architecture}`);
+          const note = await readFile(join(destination, 'build/network/NOT-GENERATED.txt'), 'utf8');
+          assert.match(note, /platform|architecture|topology|pfSense|OPNsense/i, `${platform}/${architecture}`);
+        }
+      }
+    }
   } finally {
     await rm(privateDirectory, {recursive: true, force: true});
   }

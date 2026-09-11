@@ -24,8 +24,13 @@ def build(private_dir):
         raise ValueError("Private input must not be a symlink")
     config = json.loads(config_path.read_text())
     required = {"site", "addresses_confirmed", "isolated_lab_confirmed", "lab_cidr", "relay_cidr", "management_cidr", "target_ip", "pico_ip", "protected_home_cidrs", "protected_external_cidrs", "pico", "relay_internet_https"}
-    if set(config) != required:
+    optional = {"firewall_platform", "architecture"}
+    if not required.issubset(config) or set(config) - required - optional:
         raise ValueError("Configuration keys do not match private-config.example.json")
+    platform = config.get("firewall_platform", "openwrt")
+    architecture = config.get("architecture", "tunnel")
+    if platform not in {"openwrt", "pfsense", "opnsense"} or architecture not in {"offline", "single", "tunnel", "games", "edge", "split", "dmz"}:
+        raise ValueError("Invalid firewall platform or architecture")
     if config["site"] not in {"A", "B", "C"} or any(type(config[k]) is not bool for k in ("addresses_confirmed", "isolated_lab_confirmed", "relay_internet_https")):
         raise ValueError("Invalid site or confirmation flags")
     pico = config["pico"]
@@ -63,6 +68,7 @@ def build(private_dir):
     if config["addresses_confirmed"]:
         if not config["isolated_lab_confirmed"]:
             raise ValueError("Firewall generation also requires confirmed isolation/interface planning")
+    if config["addresses_confirmed"] and platform == "openwrt" and architecture == "tunnel":
         spec = importlib.util.spec_from_file_location("lab_firewall", PUBLIC / "network/generate_firewall.py")
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
@@ -95,7 +101,11 @@ def build(private_dir):
     if firewall:
         private_write(destination / "network/firewall.candidate", firewall)
     else:
-        private_write(destination / "network/NOT-GENERATED.txt", "Firewall generation withheld: actual addresses and interface isolation are unconfirmed. Fill the private input and generate a new build only after completing network/OPENWRT.md. No sample home subnet has been substituted.\n")
+        reason = "Actual addresses and interface isolation are unconfirmed."
+        if platform != "openwrt" or architecture != "tunnel":
+            reason = f"The {platform} platform / {architecture} architecture requires a manual firewall configuration. No compatible configuration generator is provided for this combination. Read network/PFSENSE-OPNSENSE.md and network/ARCHITECTURES.md; OpenWrt UCI is not a pfSense or OPNsense configuration."
+        private_write(destination / "network/NOT-GENERATED.txt", "Firewall generation withheld: " + reason + " No sample home subnet has been substituted.\n")
+    private_write(destination / "network/platform.local.json", json.dumps({"firewall_platform": platform, "architecture": architecture, "firewall_candidate_generated": firewall is not None}, indent=2) + "\n")
     for name in ("tailscale.policy.json", "sshd-relay.conf.example"):
         text = (PUBLIC / "network" / name).read_text()
         if name == "sshd-relay.conf.example":
@@ -108,7 +118,7 @@ This directory contains private generated tokens and configuration. Never publis
 - firmware/uno_serial/: open uno_serial.ino in Arduino IDE and select the classic Uno.
 - firmware/pico_w/: upload main.py, http_core.py and config.py using the firmware guide. Network is disabled unless the local input explicitly enabled it.
 - firmware/linux_target/: run the server with the private ../lesson-tokens.json file. Default bind is loopback; use the documented lesson commands.
-- network/: site-specific inputs; firewall candidate exists only when addresses and isolation were confirmed.
+- network/: site-specific inputs and platform.local.json; a firewall candidate exists only for the dedicated OpenWrt tunnel design when addresses and isolation were confirmed. pfSense, OPNsense and other layouts require the matching manual recipe.
 - games/: runnable shared launchers and templates. Copy examples to private runtime filenames and complete the game guide before launch.
 
 A code instance does not deploy a firewall or establish isolation. Runtime firmware and game tests still require the actual hardware. Documentation remains in the public source's firmware/, network/ and games/ README files. The local hardware inventory is ../INVENTORY.md.

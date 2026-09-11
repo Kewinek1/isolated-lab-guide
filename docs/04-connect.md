@@ -37,11 +37,18 @@ All rows below are synthetic. Real home subnets remain in the private plan. Vali
 | Dynamic target pool | `.100`–`.149` | `.100`–`.149` | `.100`–`.149` |
 | Trusted relay segment | `10.78.10.0/24` | `10.78.20.0/24` | `10.78.30.0/24` |
 | Relay host | `10.78.10.2` | `10.78.20.2` | `10.78.30.2` |
-| Services, if configured | `10.77.11.0/24` | `10.77.21.0/24` | `10.77.31.0/24` |
+| Services, if configured | `10.80.10.0/24` | `10.80.20.0/24` | `10.80.30.0/24` |
 | Management | `10.79.10.0/24` | `10.79.20.0/24` | `10.79.30.0/24` |
+| Edge HOME transit, if configured | `10.81.10.0/24` | `10.81.20.0/24` | `10.81.30.0/24` |
+| Edge firewall HOME address | `10.81.10.1` | `10.81.20.1` | `10.81.30.1` |
+| Retained home-router WAN | `10.81.10.2` | `10.81.20.2` | `10.81.30.2` |
 | Overlay endpoint | Assigned by overlay | Assigned by overlay | Assigned by overlay |
 
 The service host has a services-zone address and may also have an overlay address. Those are different interfaces on the same host. The player uses the approved overlay address, while its physical uplink remains restricted by the services-zone firewall.
+
+The HOME transit row applies only to the **edge** scenario with the home router retained in router mode. The household LAN behind it remains a separate, privately recorded subnet. In the **split** scenario, WAN addresses come from the verified provider handoff; public addresses are not invented or entered into this table. A private address assigned by an upstream router belongs to the separately described behind-router variant.
+
+Participant identity and service permissions remain the same in edge and split. A different uplink does not grant access to home devices or create an obligation to expose targets publicly. Optional direct WireGuard uses its own endpoint/key/route setup and still requires the same destination restrictions; its presence in a diagram does not configure those controls.
 
 ## Participant onboarding
 

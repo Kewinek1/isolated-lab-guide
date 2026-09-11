@@ -12,6 +12,7 @@ The central rule is simple: **a device under attack must not also be responsible
 |---|---|---|
 | 1 · Understand | What are the parts, and what does an address mean? | [Network foundations](01-foundations.md) |
 | 2 · Choose | One router, two routers, VLANs, DMZ or a tunnel? | [Architecture choices](02-architectures.md) |
+| 2a · Platform | What differs between pfSense, OPNsense and OpenWrt? | [Firewall platforms](PLATFORMS.md) |
 | 3 · Prepare | Which hardware can actually perform each job? | [Hardware and build order](03-build.md) |
 | 4 · Connect | How do participants reach an approved target? | [Joining and data flow](04-connect.md) |
 | 5 · Verify | What proves that the home remains separated? | [Acceptance and exercises](05-validation.md) |
@@ -36,6 +37,8 @@ flowchart LR
 The figure shows logical boundaries; it does not require one physical box per rectangle. Solid arrows show a permitted path. The final line names a prohibition, not a cable. The interactive architecture view supplies scenario-specific wiring and addresses.
 
 The first usable stage is an **offline island**: an experimental router or switch, a lab-only computer and microcontrollers, with no home uplink. Remote access comes after the isolation checks pass. An always-on Linux computer is needed for the supplied gateway and game workflows; an Arduino Uno and Raspberry Pi Pico W cannot fill that role.
+
+Two further options appear in the scenario view: **edge**, with a trusted firewall ahead of the home router on a separately filtered HOME interface; and **split**, with independent home/lab router WANs on a WAN-only switch. The split design requires a verified ISP handoff allowing both connections. An unmanaged switch creates neither public addresses nor firewall isolation. Their [architecture details](02-architectures.md) state the missing conditions explicitly.
 
 ## What the code can and cannot establish
 

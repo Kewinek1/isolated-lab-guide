@@ -9,11 +9,15 @@ The number of routers is less important than where the trusted boundary sits. Th
 | Offline island | Lab-only switch/router and lab computer; no uplink | First exercises, router exploitation | No remote participants or internet |
 | One trusted firewall with separate zones | Independent physical interfaces or correctly configured VLANs; IPv4/IPv6 policy | Long-term home, targets and services separation | Misconfiguration of the shared firewall affects all zones |
 | Existing home router plus dedicated trusted lab firewall | Lab firewall with enforced target-to-upstream restrictions; independent target equipment | Retaining an existing home router | The home is on the upstream side and must be explicitly protected |
+| Edge firewall before the home router (`edge`) | Trusted firewall with a separately filtered HOME interface and independent lab roles | Central control of home and lab paths | It becomes part of household internet; configuration/maintenance affects both |
+| Parallel WAN connections (`split`) | ISP handoff explicitly supporting two simultaneous router connections; WAN-only switch | Independent home and lab router WANs | Provider approval/address delivery is required; the shared WAN link remains untrusted |
 | Verified isolated guest network as uplink | Guest network blocking main LAN and management on both IP families; suitable wired or Wi-Fi attachment | Low equipment count after capability testing | Many guest features isolate wireless clients only or still permit router management |
 | Ordinary second NAT router | Default consumer router configuration | Routing demonstrations | Does not provide the required target-to-home boundary |
 | Public port forward into a real services DMZ | Real separated subnet and reviewed ingress/egress policy | Later public game hosting | Public attack surface and operational responsibilities increase |
 
 A VPN is added to one of the isolated designs. It is not a competing replacement for a firewall or VLAN.
+
+The [platform comparison](PLATFORMS.md) explains pfSense, OPNsense and OpenWrt. A topology describes where equipment connects; a platform describes the software enforcing its rules. The same diagram can be implemented on different supported platforms, but their configuration files are not interchangeable.
 
 ## A · Offline island
 
@@ -78,6 +82,34 @@ The second router treats the home network as its WAN. Default LAN-to-WAN forward
 A **real DMZ** is a separate subnet with firewall rules between it, the internet and protected networks. A **DMZ host** menu on a consumer router commonly forwards otherwise unmatched inbound ports to one internal host. It does not move that host away from the home LAN. The vendor explicitly distinguishes this exposed-host feature from a true DMZ. [TP-Link DMZ explanation](https://www.tp-link.com/us/support/faq/28/)
 
 The exposed-host option remains disabled for experiment targets. Later public game hosting belongs in the services zone, with only the exact game port forwarded and a tested services-to-home denial. Public hosting is a separate operating mode; the private overlay workflow needs no broad exposure.
+
+## F · Edge firewall before the home router (`edge`)
+
+![Edge architecture: a trusted firewall before the home router, with a separately filtered HOME connection and independent lab roles](../figures/edge.svg)
+
+This is the corrected implementation of the layout with a firewall before a home router. The home router's **WAN** connects to its own HOME transit network. It does not share an interface or bridge with targets. The edge firewall explicitly denies targets, relay clients and services from initiating connections to HOME, home-router management and other protected destinations, including applicable IPv6 addresses and public aliases that route back home.
+
+The home router may remain in router mode. In that case, IPv4 home traffic can pass through NAT on both devices; this is a double-NAT **home path**, with potential game/NAT-traversal implications. An alternative is a reviewed access-point conversion: its Wi-Fi and LAN join only the protected HOME zone, and the edge firewall becomes their gateway. That changes household addressing/services and is a separate configuration step.
+
+“Closed firewall” means a reviewed ingress policy, not that no traffic can ever pass. A home router often allows connections initiated by home clients and their replies. Its WAN administration, port forwards, automatic mappings and IPv6 rules need review. The independent edge firewall provides the required lab-to-HOME denial even while ordinary home access works.
+
+The example can require WAN plus five internal roles: HOME, management, relay, targets and services. Dedicated physical ports or correctly configured VLANs implement those roles. The sketch does not prove that the chosen appliance has enough ports, a managed switch, or a host with the necessary VLAN configuration.
+
+This design makes the edge firewall part of the household's uptime and trust boundary. It remains maintained and outside exploitation scope. CrowdSec and a WireGuard VPN are optional additions after baseline isolation; neither changes that rule. Follow [the platform implementation procedure](../network/PFSENSE-OPNSENSE.md).
+
+## G · Separate home and lab WANs (`split`)
+
+![Split architecture: a provider-approved handoff and WAN-only switch connect separate home and lab router WAN interfaces](../figures/split.svg)
+
+This is the corrected implementation of the two-branch drawing. The switch connects **WAN interfaces only** to the provider handoff. Home LAN sockets, target devices and management laptops do not attach to that switch. The two routers share the same untrusted upstream link; the switch itself performs no security filtering between them.
+
+Two public addresses are available only if the provider supplies them in a compatible form. The service may allow multiple DHCP leases, separate authenticated sessions or a static allocation; it may also bind service to one device or permit only one session. A routed public block is a different delivery arrangement and does not necessarily place two usable leases on a switch. Record the provider's actual method, gateway, limits and IPv6 prefix behavior before choosing this scenario. [Netgate additional-public-address methods](https://docs.netgate.com/pfsense/en/latest/firewall/additional-ip-addresses.html)
+
+If only one lease/session is supplied, adding a switch does not create another. If the handoff is an ordinary routed LAN instead, both downstream WANs may receive **private** addresses; that is a separate behind-router/double-NAT variant and does not demonstrate two public connections. Its upstream private subnet and any other attached trusted networks need explicit protection.
+
+Separate public addresses do not prevent lab traffic from targeting the home router's public WAN. The lab firewall must block those home endpoints, protect its own management plane and constrain target egress. The home router separately denies unsolicited ingress, with no exposed administration or target forwards. Test both directions and both IP families. This architecture also depends on a trustworthy lab firewall: compromise of that firewall would put the shared WAN link itself within the attacker's reach.
+
+An unmanaged switch is acceptable here only because its one purpose is extending the **untrusted WAN link**. This does not make it suitable for distributing multiple trusted/lab VLANs. Internal segmentation still uses dedicated interfaces or a configured managed switch and appropriate host networking.
 
 ## The policy to implement
 
