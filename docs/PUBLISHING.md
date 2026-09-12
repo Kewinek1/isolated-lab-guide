@@ -64,7 +64,7 @@ The last command creates the public repository and uploads the files; execute it
 
 ## Updating the guide
 
-Review all public edits locally, then update the manifest before committing:
+Review all public edits locally. If Mermaid blocks or their headings changed, [regenerate the diagram assets](../tools/DIAGRAMS.md) first. Then update the manifest before committing:
 
 ```sh
 python3 tools/release.py manifest --reviewed-public-content
@@ -89,6 +89,8 @@ If editing only through the GitHub website, download the updated repository, rev
 | Deployment fails before Pages exists | Select Settings → Pages → GitHub Actions, then run the workflow again |
 | Organisation blocks an action | Organisation settings must allow the official GitHub Pages actions used by this workflow |
 | Website returns 404 | Wait for the successful deployment; use the exact URL shown in Pages settings |
+| Flowcharts appear as code | Use a `mermaid` fence, include the generated SVGs and diagram index, and follow the [diagram maintenance guide](../tools/DIAGRAMS.md) |
+| Diagram sources or theme changed | Regenerate the SVGs before updating the release manifest |
 | Old content appears | Check the latest workflow run and reload the page |
 | Local inventory is absent online | Expected: the static site has no private API or inventory files |
 

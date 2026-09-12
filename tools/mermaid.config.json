@@ -1,0 +1,31 @@
+{
+  "theme": "base",
+  "securityLevel": "strict",
+  "htmlLabels": false,
+  "deterministicIds": true,
+  "themeVariables": {
+    "fontFamily": "Arial, Helvetica, sans-serif",
+    "fontSize": "14px",
+    "primaryColor": "#ffffff",
+    "primaryTextColor": "#111111",
+    "primaryBorderColor": "#111111",
+    "lineColor": "#111111",
+    "secondaryColor": "#f5f5f3",
+    "tertiaryColor": "#ffffff",
+    "edgeLabelBackground": "#ffffff",
+    "actorBkg": "#ffffff",
+    "actorBorder": "#111111",
+    "actorTextColor": "#111111",
+    "actorLineColor": "#111111",
+    "signalColor": "#111111",
+    "signalTextColor": "#111111",
+    "labelBoxBkgColor": "#ffffff",
+    "labelBoxBorderColor": "#111111",
+    "labelTextColor": "#111111",
+    "noteBkgColor": "#f5f5f3",
+    "noteBorderColor": "#111111",
+    "noteTextColor": "#111111"
+  },
+  "flowchart": {"curve": "linear", "nodeSpacing": 25, "rankSpacing": 35, "wrappingWidth": 150},
+  "sequence": {"wrap": true, "useMaxWidth": false, "actorFontSize": 14, "messageFontSize": 13}
+}

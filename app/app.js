@@ -1,8 +1,11 @@
 
 import {esc, sample, validate, scenarios, rows, command, steps, diagram, concepts, icon, publicFigure, buildInputs, platforms} from "./model.js";
+import {diagramMarkup} from "./diagrams.js";
 const $=id=>document.getElementById(id);
 const SITE_ROOT=new URL("../",import.meta.url);
 const resource=path=>new URL(path,SITE_ROOT).href;
+let diagramIndexPromise;
+const loadDiagramIndex=()=>diagramIndexPromise ||= fetch(resource("app/diagram-index.json")).then(r=>{if(!r.ok)throw Error("Missing diagram index");return r.json();}).catch(()=>({diagrams:{}}));
 const state={scenario:"offline",site:"A",step:0,plans:{A:sample("A"),B:sample("B"),C:sample("C")},edited:new Set(),platformChosen:new Set(),private:false};
 const fields=[["mainRouter","Home router label"],["labRouter","Experimental router label"],["firewall","Trusted firewall label"],["labCidr","Lab subnet · /24"],["target","Linux target address"],["pico","Pico W address"],["relayCidr","Relay subnet · /24"],["managementCidr","Management subnet · /24"],["serviceCidr","Services subnet · /24"],["homeCidr","Home subnet · optional /24"],["relayHost","Approved relay VPN IP / DNS"],["gameHost","Approved game VPN IP / DNS"]];
 const docs=[
@@ -66,11 +69,12 @@ function inline(text,path){
  value=esc(value).replace(/\*\*([^*]+)\*\*/g,"<strong>$1</strong>").replace(/\*([^*]+)\*/g,"<em>$1</em>");
  return value.replace(/\u0001(\d+)\u0002/g,(_,n)=>tokens[Number(n)]);
 }
-function markdown(text,path){
+function markdown(text,path,diagramIndex){
  const lines=text.replace(/\r/g,"").split("\n");let out="",list=null;const headingCounts=new Map();
  const close=()=>{if(list){out+="</"+list+">";list=null;}};
  for(let i=0;i<lines.length;i++){const line=lines[i];
-  if(/^\s*```/.test(line)){close();let code=[];while(++i<lines.length&&!/^\s*```/.test(lines[i]))code.push(lines[i]);out+="<pre><code>"+esc(code.join("\n"))+"</code></pre>";continue;}
+  const fence=line.match(/^\s*(`{3,}|~{3,})([^`~]*)$/);
+  if(fence){close();const language=fence[2].trim().toLowerCase(),end=new RegExp("^\\s*"+fence[1][0]+"{"+fence[1].length+",}\\s*$");let code=[];while(++i<lines.length&&!end.test(lines[i]))code.push(lines[i]);const source=code.join("\n");out+=language==="mermaid"?diagramMarkup(source,diagramIndex,resource):"<pre><code>"+esc(source)+"</code></pre>";continue;}
   if(!line.trim()){close();continue;}
   const illustration=line.match(/^!\[([^\]]*)\]\(([^)]+\.svg)\)$/);if(illustration){close();try{const url=new URL(illustration[2],resource(path));if(url.origin===SITE_ROOT.origin && url.pathname.startsWith(SITE_ROOT.pathname+"figures/"))out+='<figure class="doc-figure"><img src="'+esc(url.href)+'" alt="'+esc(illustration[1])+'"><figcaption>'+esc(illustration[1])+'</figcaption></figure>';}catch{}continue;}
   const h=line.match(/^(#{1,6})\s+(.+)$/);if(h){close();const slug=h[2].toLowerCase().replace(/[^\p{L}\p{N}_\-\s]/gu,"").replace(/\s/g,"-");const count=headingCounts.get(slug)||0;headingCounts.set(slug,count+1);out+='<h'+h[1].length+' id="'+esc(slug+(count?"-"+count:""))+'">'+inline(h[2],path)+"</h"+h[1].length+">";continue;}
@@ -78,7 +82,7 @@ function markdown(text,path){
   const li=line.match(/^\s*(?:[-*]|\d+\.)\s+(.+)$/);if(li){const type=/^\s*\d+\./.test(line)?"ol":"ul";if(list!==type){close();list=type;out+="<"+type+">";}out+="<li>"+inline(li[1],path)+"</li>";continue;}
   close();if(/^>\s?/.test(line)){out+="<blockquote>"+inline(line.replace(/^>\s?/,""),path)+"</blockquote>";continue;}
   if(/^[-_]{3,}\s*$/.test(line)){out+="<hr>";continue;}
-  let para=line;while(i+1<lines.length&&lines[i+1].trim()&&!/^(?:\s*[-*]\s|\s*\d+\.\s|#{1,6}\s|\s*```|>|\|)/.test(lines[i+1]))para+=" "+lines[++i];
+  let para=line;while(i+1<lines.length&&lines[i+1].trim()&&!/^(?:\s*[-*]\s|\s*\d+\.\s|#{1,6}\s|\s*(?:`{3,}|~{3,})|>|\|)/.test(lines[i+1]))para+=" "+lines[++i];
   out+="<p>"+inline(para,path)+"</p>";
  }close();return out;
 }
@@ -86,8 +90,8 @@ async function loadDoc(path,section=""){
  const generation=++docCounter;currentDoc=path;
  document.querySelectorAll("#doc-nav button").forEach(b=>b.classList.toggle("active",b.dataset.doc===path));
  $("doc-content").setAttribute("aria-busy","true");
- try{const response=await fetch(resource(path));if(!response.ok)throw new Error("Unavailable document");const text=await response.text();if(generation!==docCounter)return;
- $("doc-content").innerHTML='<div class="doc-actions"><span>REFERENCE / '+esc(path)+'</span><a href="'+esc(resource(path))+'" target="_blank" rel="noopener">Open source ↗</a></div>'+markdown(text,path);$("doc-content").scrollTop=0;
+ try{const [response,diagramIndex]=await Promise.all([fetch(resource(path)),loadDiagramIndex()]);if(!response.ok)throw new Error("Unavailable document");const text=await response.text();if(generation!==docCounter)return;
+ $("doc-content").innerHTML='<div class="doc-actions"><span>REFERENCE / '+esc(path)+'</span><a href="'+esc(resource(path))+'" target="_blank" rel="noopener">Open source ↗</a></div>'+markdown(text,path,diagramIndex);$("doc-content").scrollTop=0;
  if(section){let id=section;try{id=decodeURIComponent(section);}catch{}const target=Array.from($("doc-content").querySelectorAll("[id]")).find(n=>n.id===id);if(target)target.scrollIntoView({block:"start"});}
  }catch{if(generation===docCounter)$("doc-content").innerHTML="<p>This chapter could not be loaded. Start the local server from the complete public package, then reload.</p>";}
  finally{if(generation===docCounter)$("doc-content").setAttribute("aria-busy","false");}
@@ -113,11 +117,13 @@ async function initPrivate(){
 render();renderConcept(0);loadDoc(currentDoc);initPrivate();
 
 export async function preparePrintBook(){
+ const diagramIndex=await loadDiagramIndex();
  const book=document.getElementById("print-book") || document.body.appendChild(Object.assign(document.createElement("div"),{id:"print-book",className:"print-book prose"}));
- const chapters=await Promise.all(docs.map(async ([title,path])=>{const r=await fetch(resource(path));if(!r.ok)throw Error("Missing chapter: "+path);return '<section class="book-chapter"><div class="eyebrow">FIELD MANUAL / '+esc(title)+'</div>'+markdown(await r.text(),path)+'</section>';}));
+ const chapters=await Promise.all(docs.map(async ([title,path])=>{const r=await fetch(resource(path));if(!r.ok)throw Error("Missing chapter: "+path);return '<section class="book-chapter"><div class="eyebrow">FIELD MANUAL / '+esc(title)+'</div>'+markdown(await r.text(),path,diagramIndex)+'</section>';}));
  let local="";
- if(state.private){for(const [name,path] of [["Local start guide","/api/private-guide"],["Identified inventory","/api/private-inventory"]]){const r=await fetch(path);if(!r.ok)throw Error("Missing private chapter");local+='<section class="book-chapter"><div class="eyebrow">PRIVATE / '+name+'</div>'+markdown(await r.text(),"private/"+name+".md")+'</section>';}}
+ if(state.private){for(const [name,path] of [["Local start guide","/api/private-guide"],["Identified inventory","/api/private-inventory"]]){const r=await fetch(path);if(!r.ok)throw Error("Missing private chapter");local+='<section class="book-chapter"><div class="eyebrow">PRIVATE / '+name+'</div>'+markdown(await r.text(),"private/"+name+".md",diagramIndex)+'</section>';}}
  book.innerHTML='<section class="book-cover"><div class="eyebrow">LAB / FIELD MANUAL · '+(state.private?"PRIVATE LOCAL EDITION":"PUBLIC EDITION")+'</div><h1>Build a lab.<br>Keep home out.</h1><p>A visual guide to isolated networks, small devices and shared experiments.</p><p>September 2026. All public network examples are fictional. This manual prepares a design; physical hardware and isolation require on-site validation.</p><p>Code and editable documentation accompany this manual in the public package.</p><h2>Reading order</h2><ol>'+docs.map(([name])=>'<li>'+name+'</li>').join("")+'</ol></section>'+local+scenarios.map(s=>'<section class="book-chapter"><div class="eyebrow">ARCHITECTURE / '+s.label+'</div><h1>'+s.title+'</h1><p>'+s.description+'</p><div class="book-figure">'+publicFigure(s.id,"A")+'</div><ul>'+s.requirements.map(r=>'<li>'+r+'</li>').join("")+'</ul></section>').join("")+chapters.join("");
+ await Promise.all(Array.from(book.querySelectorAll("img")).map(img=>img.decode()));
  document.body.classList.add("printing-book");return {chapters:chapters.length,private:state.private};
 }
 $("print").onclick=async()=>{const b=$("print");b.disabled=true;b.textContent="Preparing…";try{await preparePrintBook();window.print();}catch(error){toast("Unable to prepare the complete manual. Check that every chapter is installed.");}finally{b.disabled=false;b.textContent="Print / PDF ↗";}};

@@ -11,6 +11,7 @@ TOOLS = Path(__file__).resolve().parents[1] / "tools"
 sys.path.insert(0, str(TOOLS))
 import build_pages
 import release
+import render_diagrams
 
 class PagesTests(unittest.TestCase):
     def setUp(self):
@@ -24,6 +25,12 @@ class PagesTests(unittest.TestCase):
             "app/index.html": '<head><link href="/app/style.css"><script src="/app/app.js"></script></head>',
             "app/app.js": "export const example = true;",
             "app/style.css": "body { color: black; }",
+            "tools/mermaid.config.json": "{}",
+            "app/diagram-index.json": json.dumps({
+                "renderer": "@mermaid-js/mermaid-cli@" + render_diagrams.VERSION,
+                "configuration_sha256": hashlib.sha256(b"{}").hexdigest(),
+                "diagrams": {},
+            }),
             "docs/guide.md": "Public guide",
             ".github/workflows/pages.yml": "name: Public build",
             ".gitignore": "private/",
@@ -73,6 +80,13 @@ class PagesTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             build_pages.build(self.root / "site", self.root)
 
+    def test_changed_diagram_refuses_build_even_with_updated_public_manifest(self):
+        (self.root / "docs/guide.md").write_text("```mermaid\nflowchart LR\n A --> B\n```\n")
+        self.save_manifest()
+        with self.assertRaisesRegex(ValueError, "Mermaid sources changed"):
+            build_pages.build(self.output, self.root)
+        self.assertFalse(self.output.exists())
+
     def test_only_the_named_workflow_is_allowed_as_hidden_source(self):
         (self.root / ".github" / "secret.yml").write_text("Unreviewed")
         with self.assertRaises(ValueError):
@@ -80,4 +94,3 @@ class PagesTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

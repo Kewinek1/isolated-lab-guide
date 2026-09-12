@@ -25,6 +25,7 @@ The custom monochrome application includes:
 - A firewall software selector for pfSense, OPNsense and OpenWrt, with platform-appropriate instructions.
 - Original SVG figures that export exclusively from fictional defaults, including the edge-firewall and conditional split-ISP layouts.
 - A complete handbook, device exercises, game instructions and sources.
+- Handbook flowcharts and sequence diagrams rendered as local SVG illustrations, with expandable source notation.
 - **Print / PDF**, which prepares all chapters and all seven architecture figures. A local edition adds its private inventory and guide.
 
 For a browser-only public link, follow [Publish on GitHub](docs/PUBLISHING.md). The included GitHub Actions workflow builds and deploys a static Pages site after Pages is enabled in repository settings. Readers need no Python installation. The local server remains available for offline and private use.
@@ -90,7 +91,7 @@ python3 tools/release.py export --output /tmp/lab-public.zip
 
 Extract that archive into a separate directory for GitHub. Do not upload a workspace containing private source images. No tool here uploads content or sends invitations.
 
-After intentional public edits, review every changed file, including comments, examples, screenshots and metadata. Only then rebuild the manifest:
+After intentional public edits, review every changed file, including comments, examples, screenshots and metadata. If Mermaid blocks or their headings changed, [regenerate the handbook diagrams](tools/DIAGRAMS.md) first. Only then rebuild the manifest:
 
 ```sh
 python3 tools/release.py manifest --reviewed-public-content
@@ -107,9 +108,11 @@ python3 -m unittest discover -s games/tests -p 'test_*.py' -v
 python3 -m unittest discover -s network -p 'test_*.py' -v
 python3 -m unittest discover -s tests -p 'test_*.py' -v
 node tests/model.test.mjs
+node tests/diagrams.test.mjs
+python3 tools/render_diagrams.py check
 ```
 
-Node is needed only for the optional JavaScript tests, not to run the manual. The Uno parser has a native C++ test documented in the firmware guide. [Validation record](VALIDATION.md) distinguishes host tests from unperformed hardware checks.
+Node is needed for optional JavaScript tests and regenerating diagram assets, not to run the manual. The Uno parser has a native C++ test documented in the firmware guide. [Validation record](VALIDATION.md) distinguishes host tests from unperformed hardware checks.
 
 ## Core distinctions
 

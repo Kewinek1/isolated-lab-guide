@@ -4,6 +4,7 @@ import argparse
 import hashlib
 from pathlib import Path
 import release
+import render_diagrams
 
 def build(output, root=release.ROOT):
     root = root.resolve()
@@ -11,6 +12,7 @@ def build(output, root=release.ROOT):
     if output.is_symlink() or output.exists() or output.resolve().is_relative_to(root):
         raise ValueError("Use a new output directory outside the public source tree")
     inventory = release.check(root)
+    render_diagrams.check(root)
     # Read and verify before creating any output. Hidden workflow/config files
     # are repository metadata and do not belong in the website artifact.
     content = {}

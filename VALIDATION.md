@@ -40,3 +40,11 @@ The public guide includes seven architectures and 18 reference chapters. The two
 The 15 JavaScript cases cover all seven scenarios, SVG XML/escaping and public-export privacy, private home-transit ranges, overlap rejection, platform/scenario validation and nine confirmed platform/topology builds. Only OpenWrt with the dedicated tunnel architecture can produce a UCI candidate; pfSense, OPNsense and edge/split builds remain manual. The 34 Python public-tool tests also pass, including compatibility with older input files.
 
 Browser checks cover all scenario/site/platform selections, scoped code downloads, chapter and SVG loading, fragment navigation, the repository URL prefix, mobile overflow and public/private PDF generation. The platform-specific rules are a documented policy specification; no importable BSD configuration or successful physical-network deployment is claimed.
+
+## Handbook diagram rendering
+
+Checked on 2026-09-12. Mermaid fences render as local monochrome SVG illustrations in the interactive handbook. The original notation remains available under an expandable source control and in the Markdown files for GitHub. The static builder rejects stale source, theme, metadata or SVG hashes before creating an output directory.
+
+The 40 Python public-tool tests include diagram extraction, literal nested fences, asset drift, missing assets and rejection of active SVG elements or remote resources. Two JavaScript diagram cases verify illustration markup, source escaping, repository-relative assets and fallback behavior; the 15 model cases remain passing.
+
+Chromium checks passed for all 14 diagram occurrences on both repository-relative static entrypoints and the local edition. Source expansion, 18 chapter loads, mobile containment and public/private print preparation passed with no browser exceptions. The rebuilt public and private PDFs contain the nine diagram occurrences in their included reference chapters; the remaining linked chapters display their diagrams in the guide.

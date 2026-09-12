@@ -1,0 +1,76 @@
+{
+  "renderer": "@mermaid-js/mermaid-cli@11.17.0",
+  "configuration_sha256": "c1b7c21bc103c4ec709c2cb2b7f185a37cb9d792598b615b6ce8f7d27cfcc76e",
+  "diagrams": {
+    "flowchart LR\n  A[Browser] --> B[Destination address]\n  B --> C[Route and firewall decision]\n  C --> D[Port 8080]\n  D --> E[Lab web service]": {
+      "path": "figures/mermaid/782effd7298a97896c28.svg",
+      "alt": "Flowchart: Begin with one message",
+      "sha256": "188f105af71dab5648bbad508a00b869b7f706bb7ee03351823df5c41d7a81c7"
+    },
+    "flowchart LR\n  C[Lab-only computer] --> R[Experimental router or switch]\n  R --> P[Linux target]\n  R --> W[Pico W]\n  C -->|USB serial| U[Arduino Uno]": {
+      "path": "figures/mermaid/5dd19e73b5ea72ad0b27.svg",
+      "alt": "Flowchart: A · Offline island",
+      "sha256": "fe073dc4a74ccb7abf9796ada0306319f91d27e3a052413716239e1e4ce1cba5"
+    },
+    "flowchart TB\n  I[Internet] --> F[Trusted firewall]\n  F --> H[Home · personal devices]\n  F --> M[Management · administrator]\n  F --> S[Services · game host]\n  F --> T[Targets · disposable systems]": {
+      "path": "figures/mermaid/45347c7d82ef8105af11.svg",
+      "alt": "Flowchart: B · One trusted firewall, several zones",
+      "sha256": "8ca7b1ec1a647c2716654c3b6581cf9424c6c14ddd14fbcc62d140f646477640"
+    },
+    "flowchart LR\n  I[Internet] --> R[Home router]\n  R --> H[Home devices]\n  R -->|Upstream transport| F[Trusted lab firewall]\n  F --> T[Targets]\n  F --> S[Separate services interface]": {
+      "path": "figures/mermaid/ff33aa85aa27a7577408.svg",
+      "alt": "Flowchart: C · Existing home router plus a trusted lab firewall",
+      "sha256": "146028927e0c60be8e26cc2729d56cf4b41ff1e245b992cb2f0c5d653b6726fc"
+    },
+    "flowchart LR\n  T[Compromised lab target] --> N[Second router: default LAN-to-WAN allow]\n  N --> H[Upstream home device]": {
+      "path": "figures/mermaid/ff82ef3506cc0c7b8972.svg",
+      "alt": "Flowchart: D · Why ordinary double NAT fails",
+      "sha256": "5364aaf4c78df46229c5aad19e9618173b475f6da8c8225229dbb4a0ef0629de"
+    },
+    "sequenceDiagram\n  participant P as Approved participant\n  participant O as Overlay access policy\n  participant G as Trusted SSH relay\n  participant T as Pico W target\n  P->>O: SSH to approved relay TCP 22\n  O->>G: Encrypted traffic allowed for this identity\n  G->>T: Open one permitted target TCP socket through firewall\n  T->>G: Application response\n  G->>P: Response through the permitted tunnel": {
+      "path": "figures/mermaid/5c053b09b6e5a73f99aa.svg",
+      "alt": "Sequence diagram: Trace the strict reference request",
+      "sha256": "894a42b66e17495dc04971c53e7bdc2bd805ee26248b61ee99fa4f68dbc46ce9"
+    },
+    "flowchart LR\n  P[Approved participant] -->|Encrypted connection| G[Trusted access gateway]\n  I[Internet] --> F[Trusted firewall]\n  F --> H[Home zone · personal devices]\n  F --> G\n  G -->|Only approved target and port| T[Target zone · disposable systems]\n  F --> S[Services zone · game servers]\n  P -->|Game access rule| S\n  T --- X[Home and management access denied]": {
+      "path": "figures/mermaid/b6a4f83c1c16571b3257.svg",
+      "alt": "Flowchart: The destination",
+      "sha256": "c3a289674e515e125b1ac6b276e45a3f357e9f295138eb71672cdf010df6d04e"
+    },
+    "flowchart LR\n    A[Terminal on lab computer] -->|USB serial: HELP / LED ON| U[Uno built-in LED]\n    C[Authorized lab client] -->|HTTP request, TCP 8080| W[Pico W built-in LED]\n    C -->|HTTP request, TCP 8081| L[Linux fictional records]": {
+      "path": "figures/mermaid/d72a418ec9374ee03154.svg",
+      "alt": "Flowchart: Hardware and application lessons",
+      "sha256": "5f4b2ab99c837a103c552af6484e6261ceb2f48feaa49786b85cf01f3a004b63"
+    },
+    "flowchart LR\n  T[Dedicated test computer] --- A[Experimental access point]\n  A --- P[Pico W / Linux target]\n  T --- U[Uno over USB serial]\n  H[Household network: physically separate]": {
+      "path": "figures/mermaid/7dbe71c30ca2a53933f4.svg",
+      "alt": "Flowchart: 1. Offline bench: first working experiment",
+      "sha256": "4c2d67e0fba57237d6df4a6bd690a7932a44da88f613fbefd1bddf6931caadef"
+    },
+    "flowchart LR\n  I[Internet] --- F[Trusted firewall / router]\n  F --- H[Home: everyday devices]\n  F --- M[Management: administration]\n  F --- R[Relay or services: maintained hosts]\n  F --- L[Lab: attack targets]": {
+      "path": "figures/mermaid/80d232bdd485c4cf3d24.svg",
+      "alt": "Flowchart: 2. One capable firewall",
+      "sha256": "5b649dc6be2b6b4e05d42acdf9248c17b2380973e144a5cea8bf79ce1e42302c"
+    },
+    "flowchart LR\n  I[Internet] --- H[Household router]\n  H --- D[Everyday home devices]\n  H --- F[Trusted lab firewall: uplink]\n  F --- M[Management port / console]\n  F --- R[Maintained Linux relay]\n  F --- E[Experimental router or access point]\n  E --- T[Pico / Linux target]": {
+      "path": "figures/mermaid/ca6aaabb45ee120621c3.svg",
+      "alt": "Flowchart: 3. Dedicated boundary behind a household router",
+      "sha256": "91202ccc3affa8b2d5d674975ab066a4e47bab88d3a9943b3e154a035f86a50e"
+    },
+    "sequenceDiagram\n  participant C as Registered workstation\n  participant V as Encrypted VPN\n  participant R as Trusted relay / SSH\n  participant F as Lab firewall\n  participant P as Pico HTTP target\n  C->>V: SSH to registered relay, TCP 22\n  V->>R: Authorized encrypted connection\n  R->>F: New TCP connection to 10.77.10.30:8080\n  F->>P: Permit exactly this destination and port\n  P-->>C: Response returns through established connections": {
+      "path": "figures/mermaid/d9ce729d03f39c460dcb.svg",
+      "alt": "Sequence diagram: 4. Remote tunnel: connection permission is separate from containment",
+      "sha256": "1706a68d5665e67599808d9cd0a6c4826fb510376e105d955fd7061d4c2a0e95"
+    },
+    "flowchart LR\n  I[ISP handoff] --- F[Trusted edge firewall]\n  F --- HT[HOME_TRANSIT: separate network]\n  HT --- HW[Household router WAN]\n  HW --- H[Household LAN and Wi-Fi]\n  F --- M[MGMT]\n  F --- R[RELAY]\n  F --- L[LAB]\n  F --- S[SERVICES]": {
+      "path": "figures/mermaid/555b434bfb9bc1dc978b.svg",
+      "alt": "Flowchart: 6. Edge firewall before the retained household router",
+      "sha256": "ded0477949cc1759054c6e8cdd572878318bdfce44dab3427920eaafe3f5552c"
+    },
+    "flowchart LR\n  I[ISP handoff: two concurrent connections authorized] --- W[WAN-only switch]\n  W --- H[Household router WAN]\n  H --- D[Household LAN and Wi-Fi]\n  W --- F[Lab firewall WAN]\n  F --- R[Separate relay / lab / management / services]": {
+      "path": "figures/mermaid/d04e85186af2b8ca702c.svg",
+      "alt": "Flowchart: 7. Split the ISP handoff between two trusted WANs",
+      "sha256": "b2c9ca7d5d7db78561f35defd5f3fd2625b335f05e31eea4d9bc1d9cfe417263"
+    }
+  }
+}
